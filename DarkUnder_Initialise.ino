@@ -1,4 +1,5 @@
 #include "Arduboy2.h"
+#include <MicroGamerMemoryCard.h>
 
 /* -----------------------------------------------------------------------------------------------------------------------------
  *  Initialise Game Play.
@@ -10,8 +11,8 @@ void initialiseGame() {
 
     if (ALTERNATIVE_ENDING_SEQ != 1) {
 
-      byte game = EEPROM.read(EEPROM_SEQ_START);
-      byte seq = EEPROM.read(EEPROM_SEQ_START + 1);
+      uint8_t game = mem.read(EEPROM_SEQ_START);
+      uint8_t seq = mem.read(EEPROM_SEQ_START + 1);
 
       if (game != ALTERNATIVE_ENDING_PREFIX || seq != (ALTERNATIVE_ENDING_SEQ - 1)) {
 
@@ -170,7 +171,7 @@ uint8_t loadEnemies(const uint8_t * level, Enemy * enemies, uint8_t idx, uint8_t
 
 #ifdef SAVE_GAME
 
-#define EEPROM_START            EEPROM_STORAGE_SPACE_START + 100
+#define EEPROM_START            0
 #define EEPROM_START_C1         EEPROM_START
 #define EEPROM_START_C2         EEPROM_START + 1
 #define EEPROM_LEVEL_NO         EEPROM_START + 2
@@ -182,6 +183,7 @@ uint8_t loadEnemies(const uint8_t * level, Enemy * enemies, uint8_t idx, uint8_t
 #define EEPROM_ITEM_LENGTH      4
 #define EEPROM_DOOR_LENGTH      4
 
+MicroGamerMemoryCard mem(256);
 
 /* ----------------------------------------------------------------------------
  *   Is the EEPROM initialised?
@@ -191,15 +193,16 @@ uint8_t loadEnemies(const uint8_t * level, Enemy * enemies, uint8_t idx, uint8_t
  *   it resets the settings ..
  */
 bool initEEPROM() {
+  mem.load();
 
-  byte c1 = EEPROM.read(EEPROM_START_C1);
-  byte c2 = EEPROM.read(EEPROM_START_C2);
+  uint8_t c1 = mem.read(EEPROM_START_C1);
+  uint8_t c2 = mem.read(EEPROM_START_C2);
 
   if (c1 != 68 || c2 != 85) { // RU 68 85
-
-    EEPROM.update(EEPROM_START_C1, 68);
-    EEPROM.update(EEPROM_START_C2, 85);
-    EEPROM.update(EEPROM_LEVEL_NO, 255);
+  
+    mem.update(EEPROM_START_C1, 68);
+    mem.update(EEPROM_START_C2, 85);
+    mem.update(EEPROM_LEVEL_NO, 255);
 
   }
 
@@ -211,7 +214,7 @@ bool initEEPROM() {
  */
 uint8_t getLevel() {
 
-  return EEPROM.read(EEPROM_LEVEL_NO);
+  return mem.read(EEPROM_LEVEL_NO);
 
 }
 
@@ -221,27 +224,29 @@ uint8_t getLevel() {
  */
 void saveGame() {
 
-  EEPROM.update(EEPROM_LEVEL_NO, level);
-  EEPROM.update(EEPROM_PLAYER_LEVEL, playerLevel);
-  EEPROM.put(EEPROM_PLAYER_START, myHero);
+  mem.update(EEPROM_LEVEL_NO, level);
+  mem.update(EEPROM_PLAYER_LEVEL, playerLevel);
+  mem.put(EEPROM_PLAYER_START, myHero);
 
   uint16_t loc = EEPROM_ENEMY_START;
 
   for (int i = 0; i < NUMBER_OF_ENEMIES; i++) {
-    EEPROM.put(loc, enemies[i]);
+    mem.put(loc, enemies[i]);
     loc = loc + EEPROM_ENEMY_LENGTH;
   }
 
   for (int i = 0; i < NUMBER_OF_ITEMS; i++) {
-    EEPROM.put(loc, items[i]);
+    mem.put(loc, items[i]);
     loc = loc + EEPROM_ITEM_LENGTH;
   }
 
   for (int i = 0; i < NUMBER_OF_DOORS; i++) {
-    EEPROM.put(loc, doors[i]);
+    mem.put(loc, doors[i]);
     loc = loc + EEPROM_DOOR_LENGTH;
   }
 
+  //  Save to flash
+  mem.save();
 }
 
 
@@ -250,32 +255,35 @@ void saveGame() {
  */
 void restoreGame() {
 
-  level = EEPROM.read(EEPROM_LEVEL_NO);
-  playerLevel = EEPROM.read(EEPROM_PLAYER_LEVEL);
+  // Load from flash
+  mem.load();
+
+  level = mem.read(EEPROM_LEVEL_NO);
+  playerLevel = mem.read(EEPROM_PLAYER_LEVEL);
 
   initialiseLevel(&myHero, &myLevel, levels[level]);
 
-  EEPROM.get(EEPROM_PLAYER_START, myHero);
+  mem.get(EEPROM_PLAYER_START, myHero);
 
   uint16_t loc = EEPROM_ENEMY_START;
 
   for (int i = 0; i < NUMBER_OF_ENEMIES; i++) {
     Enemy enemy;
-    EEPROM.get(loc, enemy);
+    mem.get(loc, enemy);
     enemies[i] = enemy;
     loc = loc + EEPROM_ENEMY_LENGTH;
   }
 
   for (int i = 0; i < NUMBER_OF_ITEMS; i++) {
     Item item;
-    EEPROM.get(loc, item);
+    mem.get(loc, item);
     items[i] = item;
     loc = loc + EEPROM_ITEM_LENGTH;
   }
 
   for (int i = 0; i < NUMBER_OF_DOORS; i++) {
     Item door;
-    EEPROM.get(loc, door);
+    mem.get(loc, door);
     doors[i] = door;
     loc = loc + EEPROM_DOOR_LENGTH;
   }
