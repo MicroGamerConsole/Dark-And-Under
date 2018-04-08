@@ -73,6 +73,7 @@ void setup() {
   arduboy.boot();
   arduboy.flashlight();
   arduboy.setFrameRate(30);
+  arduboy.enableDoubleBuffer();
 
   #ifdef USE_SOUNDS
   arduboy.audio.begin();
