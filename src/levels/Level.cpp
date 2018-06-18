@@ -1,4 +1,4 @@
-#include "Arduboy2.h"
+#include "MicroGamer.h"
 #include "Level.h"
 #include "../../Enums.h"
 #include "MapData.h"
