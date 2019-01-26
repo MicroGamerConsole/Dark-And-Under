@@ -14,8 +14,8 @@
 #define DOWN_BUTTON_MASK                  DOWN_BUTTON
 #define LEFT_BUTTON_MASK                  LEFT_BUTTON
 #define RIGHT_BUTTON_MASK                 RIGHT_BUTTON
-#define A_BUTTON_MASK                     A_BUTTON
-#define B_BUTTON_MASK                     B_BUTTON
+#define A_BUTTON_MASK                     Y_BUTTON
+#define B_BUTTON_MASK                     X_BUTTON
 
 #define SELECT_BUTTON_MASK                A_BUTTON_MASK
 #define BACK_BUTTON_MASK                  B_BUTTON_MASK
